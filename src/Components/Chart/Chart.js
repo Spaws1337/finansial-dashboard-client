@@ -5,29 +5,64 @@ import styled from 'styled-components';
 import { useGlobalContext } from '../../context/globalContext';
 import { dateFormat } from '../../utils/dateFormat';
 
-ChartJs.register(
-  CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement
-);
+ChartJs.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
 function Chart() {
+
   const { incomes, expenses } = useGlobalContext();
 
-  const mergedData = mergeDataByDate(incomes, expenses);
+  const sortedIncomes = incomes.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const sortedExpenses = expenses.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const allDates = [...sortedIncomes.map(inc => inc.date), ...sortedExpenses.map(exp => exp.date)];
+  const uniqueDates = Array.from(new Set(allDates)); // Удаляем дубликаты дат
+  const sortedUniqueDates = uniqueDates.sort((a, b) => new Date(a) - new Date(b));
+  const incomeByDate = {};
+  const expenseByDate = {};
+
+  sortedIncomes.forEach((income) => {
+    const date = dateFormat(income.date);
+    if (incomeByDate[date]) {
+      incomeByDate[date] += income.amount;
+    } else {
+      incomeByDate[date] = income.amount;
+    }
+  });
+
+  sortedExpenses.forEach((expense) => {
+    const date = dateFormat(expense.date);
+    if (expenseByDate[date]) {
+      expenseByDate[date] += expense.amount;
+    } else {
+      expenseByDate[date] = expense.amount;
+    }
+  });
+  const incomeData = Object.keys(incomeByDate).map((date) => ({
+    x: date,
+    y: incomeByDate[date],
+  }));
+  
+  const expenseData = Object.keys(expenseByDate).map((date) => ({
+    x: date,
+    y: expenseByDate[date],
+  }));
+  
 
   const data = {
-    labels: mergedData.map((entry) => dateFormat(entry.date)),
+    labels: sortedUniqueDates.map((date) => dateFormat(date)),
     datasets: [
       {
         label: 'Доходы',
-        data: mergedData.map((entry) => entry.income !== 0 ? entry.income : null),
+        data: incomeData,
         backgroundColor: 'green',
         tension: 0.2,
+        pointRadius: incomeData.map((income) => (income.y !== 0 ? 3 : 0)),
       },
       {
         label: 'Расходы',
-        data: mergedData.map((entry) => entry.expense !== 0 ? entry.expense : null),
+        data: expenseData,
         backgroundColor: 'red',
         tension: 0.2,
+        pointRadius: expenseData.map((expense) => (expense.y !== 0 ? 3 : 0)),
       },
     ],
   };
@@ -39,32 +74,24 @@ function Chart() {
     data.labels.unshift('');
     data.datasets.forEach((dataset) => {
       dataset.data.unshift(null);
+      dataset.pointRadius.unshift(0);
     });
   }
-  const options = {
-    plugins: {
-      tooltip: {
-        enabled: true,
-      },
-    },
-    spanGaps: true,
-  };
-  
+
   return (
     <ChartStyled>
       {isSingleDataPoint ? (
         <p>Недостаточно данных для построения графика</p>
       ) : (
-        <Line data={data} options={options} />
+        <Line data={data} />
       )}
     </ChartStyled>
   );
-  
 }
 
 const ChartStyled = styled.div`
-  background: #FCF6F9;
-  border: 2px solid #FFFFFF;
+  background: #fcf6f9;
+  border: 2px solid #ffffff;
   box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
   padding: 1rem;
   border-radius: 20px;
@@ -79,37 +106,3 @@ const ChartStyled = styled.div`
 `;
 
 export default Chart;
-
-// Вспомогательная функция для объединения данных по дате
-function mergeDataByDate(incomes, expenses) {
-  const combinedEntries = [...incomes, ...expenses];
-
-  // Сортируем записи по дате в порядке возрастания
-  combinedEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-  const mergedData = [];
-
-  combinedEntries.forEach((entry) => {
-    const { date, amount } = entry;
-
-    const existingEntry = mergedData.find((mergedEntry) => mergedEntry.date === date);
-
-    if (existingEntry) {
-      if (entry.type === 'income') {
-        existingEntry.income += amount;
-      } else if (entry.type === 'expense') {
-        existingEntry.expense += amount;
-      }
-    } else {
-      const newEntry = {
-        date,
-        income: entry.type === 'income' ? amount : 0,
-        expense: entry.type === 'expense' ? amount : 0,
-      };
-
-      mergedData.push(newEntry);
-    }
-  });
-
-  return mergedData;
-}
