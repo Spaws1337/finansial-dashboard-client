@@ -14,7 +14,7 @@ function Chart() {
   const sortedIncomes = incomes.sort((a, b) => new Date(a.date) - new Date(b.date));
   const sortedExpenses = expenses.sort((a, b) => new Date(a.date) - new Date(b.date));
   const allDates = [...sortedIncomes.map(inc => inc.date), ...sortedExpenses.map(exp => exp.date)];
-  const uniqueDates = Array.from(new Set(allDates)); // Удаляем дубликаты дат
+  const uniqueDates = Array.from(new Set(allDates));
   const sortedUniqueDates = uniqueDates.sort((a, b) => new Date(a) - new Date(b));
   const incomeByDate = {};
   const expenseByDate = {};
