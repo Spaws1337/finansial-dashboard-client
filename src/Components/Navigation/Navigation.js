@@ -11,7 +11,7 @@ function Navigation({active,setActive}) {
         <div className='user-container'>
             <img src={avatar} alt=''/>
             <div className='text'>
-                <h2>Александр</h2>
+                <h2>Пользователь</h2>
                 <p>Ваши деньги</p>
             </div>
         </div>
@@ -26,11 +26,11 @@ function Navigation({active,setActive}) {
                 </li>
             })}
         </ul>
-        <div className='bottom-nav'>
+        {/* <div className='bottom-nav'>
             <li>
                 {signout} Выйти
             </li>
-        </div>
+        </div> */}
     </NavStyled>
   )
 }
