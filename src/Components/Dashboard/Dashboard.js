@@ -196,6 +196,31 @@ const DashboardStyled = styled.div`
       }
     }
   }
+  @media screen and (max-width: 1680px){
+    .stats-content {
+      .chart-content {
+        .income p,
+        .expense p,
+        .balance p {
+        font-size: 1.6rem;
+      }
+        .income h2,
+        .expense h2,
+        .balance h2 {
+        font-size: 1.5rem;
+      }
+    }
+  }
+  .history-content{
+    .salary-title {
+      font-size: 1.2rem;
+
+      span {
+        font-size: 1.2rem;
+      }
+    }
+  }
+  }
 `;
 
 export default Dashboard;
